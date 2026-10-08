@@ -1,5 +1,7 @@
 # Demo Web Shop – UI Test Automation
 
+[![UI tests](https://github.com/AlexMoldoRo/DemoWebShopTestProject/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/AlexMoldoRo/DemoWebShopTestProject/actions/workflows/tests.yml)
+
 Automated UI tests for [Demo Web Shop](https://demowebshop.tricentis.com/), a sample e-commerce
 application published by Tricentis for test automation practice.
 
