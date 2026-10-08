@@ -1,0 +1,17 @@
+<!--
+    Test data for the Login page.
+    <email> is left empty where the test first registers a brand new user and logs in with it.
+-->
+<dataSets>
+    <wrongPassword>
+        <email></email>
+        <password>WrongPass@999</password>
+        <expectedMessage>The credentials provided are incorrect</expectedMessage>
+    </wrongPassword>
+
+    <unregisteredEmail>
+        <email></email>
+        <password>Test@12345</password>
+        <expectedMessage>No customer account found</expectedMessage>
+    </unregisteredEmail>
+</dataSets>

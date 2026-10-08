@@ -1,0 +1,32 @@
+<!-- Test data for the search tests. -->
+<dataSets>
+    <existingKeyword>
+        <keyword>computer</keyword>
+    </existingKeyword>
+
+    <noResultsKeyword>
+        <keyword>zzzznotfound</keyword>
+        <expectedMessage>No products were found that matched your criteria.</expectedMessage>
+    </noResultsKeyword>
+
+    <emptyKeyword>
+        <expectedMessage>Please enter some search keyword</expectedMessage>
+    </emptyKeyword>
+
+    <shortKeyword>
+        <keyword>co</keyword>
+        <expectedMessage>Search term minimum length is 3 characters</expectedMessage>
+    </shortKeyword>
+
+    <!-- The keyword has results, but none of them is a book -->
+    <advancedOtherCategory>
+        <keyword>computer</keyword>
+        <category>Books</category>
+        <expectedMessage>No products were found that matched your criteria.</expectedMessage>
+    </advancedOtherCategory>
+
+    <advancedSameCategory>
+        <keyword>computer</keyword>
+        <category>Computers &gt;&gt; Desktops</category>
+    </advancedSameCategory>
+</dataSets>

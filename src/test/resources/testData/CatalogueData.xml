@@ -1,0 +1,17 @@
+<!-- Test data for the catalogue tests. -->
+<dataSets>
+    <books>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <sortByPrice>Price: Low to High</sortByPrice>
+        <sortByName>Name: Z to A</sortByName>
+        <pageSize>4</pageSize>
+        <priceFilter>Under 25.00</priceFilter>
+        <maxPrice>25.00</maxPrice>
+    </books>
+
+    <desktops>
+        <category>Computers</category>
+        <subCategory>Desktops</subCategory>
+    </desktops>
+</dataSets>

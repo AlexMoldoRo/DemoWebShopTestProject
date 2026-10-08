@@ -1,0 +1,51 @@
+name: UI tests
+
+on:
+  # Every push and pull request runs the smoke suite (about 1 minute, places 1 test order)
+  push:
+  pull_request:
+  # The full regression suite is started by hand: Actions tab > UI tests > Run workflow
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "TestNG suite to run"
+        type: choice
+        options:
+          - Suites/SmokeSuite.xml
+          - Suites/RegressionSuite.xml
+        default: Suites/RegressionSuite.xml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Google Chrome is already installed on the GitHub ubuntu runners;
+      # Selenium Manager downloads the matching ChromeDriver by itself.
+      - name: Run the tests (headless Chrome)
+        run: >
+          mvn -B test
+          -Dbrowser=chrome
+          -Dheadless=true
+          -DsuiteFile=${{ github.event.inputs.suite || 'Suites/SmokeSuite.xml' }}
+
+      # Kept even when tests fail, so the report and the screenshots can be downloaded from the run page
+      - name: Upload the report, logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            target/chaintest/
+            target/logs/
+            target/screenshots/
+          if-no-files-found: ignore

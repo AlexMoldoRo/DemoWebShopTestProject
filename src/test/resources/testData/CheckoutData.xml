@@ -1,0 +1,29 @@
+<!--
+    Test data for the checkout tests. The address is invented; example.com cannot receive email.
+    <email> is left empty where the test generates a unique one.
+-->
+<dataSets>
+    <guestOrder>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <firstName>Alex</firstName>
+        <lastName>Tester</lastName>
+        <email></email>
+        <country>Romania</country>
+        <city>Bucharest</city>
+        <address>Test Street 1</address>
+        <zipCode>010101</zipCode>
+        <phone>0700000000</phone>
+        <expectedMessage>Your order has been successfully processed!</expectedMessage>
+    </guestOrder>
+
+    <termsNotAccepted>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <expectedMessage>Please accept the terms of service before the next step.</expectedMessage>
+    </termsNotAccepted>
+
+    <emptyCartMessage>
+        <expectedMessage>Your Shopping Cart is empty!</expectedMessage>
+    </emptyCartMessage>
+</dataSets>

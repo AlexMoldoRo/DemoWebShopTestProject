@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+    <Appenders>
+        <Routing name="Routing">
+            <Routes pattern="$${ctx:threadName:-suite}">
+                <Route>
+                    <File name="appender-${ctx:threadName:-suite}"
+                          fileName="target/logs/suite/${ctx:threadName:-suite}.log"
+                          append="false">
+                        <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+                    </File>
+                </Route>
+            </Routes>
+        </Routing>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Routing"/>
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,56 @@
+<!--
+    Test data for the Register page.
+    <email> is left empty where the test must generate a unique address at run time
+    (the shop refuses an email that is already registered).
+-->
+<dataSets>
+    <validUser>
+        <gender>Male</gender>
+        <firstName>Alex</firstName>
+        <lastName>Tester</lastName>
+        <email></email>
+        <password>Test@12345</password>
+        <confirmPassword>Test@12345</confirmPassword>
+        <expectedMessage>Your registration completed</expectedMessage>
+    </validUser>
+
+    <invalidEmail>
+        <gender>Female</gender>
+        <firstName>Ana</firstName>
+        <lastName>Tester</lastName>
+        <email>ana.tester.example.com</email>
+        <password>Test@12345</password>
+        <confirmPassword>Test@12345</confirmPassword>
+        <expectedMessage>Wrong email</expectedMessage>
+    </invalidEmail>
+
+    <shortPassword>
+        <gender>Male</gender>
+        <firstName>Ion</firstName>
+        <lastName>Tester</lastName>
+        <email></email>
+        <password>12345</password>
+        <confirmPassword>12345</confirmPassword>
+        <expectedMessage>The password should have at least 6 characters.</expectedMessage>
+    </shortPassword>
+
+    <passwordMismatch>
+        <gender>Female</gender>
+        <firstName>Maria</firstName>
+        <lastName>Tester</lastName>
+        <email></email>
+        <password>Test@12345</password>
+        <confirmPassword>Test@54321</confirmPassword>
+        <expectedMessage>The password and confirmation password do not match.</expectedMessage>
+    </passwordMismatch>
+
+    <existingEmail>
+        <gender>Male</gender>
+        <firstName>Dan</firstName>
+        <lastName>Tester</lastName>
+        <email></email>
+        <password>Test@12345</password>
+        <confirmPassword>Test@12345</confirmPassword>
+        <expectedMessage>The specified email already exists</expectedMessage>
+    </existingEmail>
+</dataSets>

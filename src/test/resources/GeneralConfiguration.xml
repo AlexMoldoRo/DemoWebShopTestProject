@@ -1,0 +1,9 @@
+<configuration>
+    <baseUrl>https://demowebshop.tricentis.com/</baseUrl>
+    <!-- chrome | edge | firefox. Can be overridden with -Dbrowser=edge -->
+    <browser>chrome</browser>
+    <!-- true = no visible browser window (used on CI). Can be overridden with -Dheadless=true -->
+    <headless>false</headless>
+    <!-- Maximum time, in seconds, an explicit wait looks for an element -->
+    <explicitWaitSeconds>10</explicitWaitSeconds>
+</configuration>

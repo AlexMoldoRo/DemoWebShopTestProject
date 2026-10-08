@@ -1,0 +1,47 @@
+<!-- Test data for the cart and wishlist tests. Both products are in the Books category. -->
+<dataSets>
+    <addToCart>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <expectedMessage>The product has been added to your shopping cart</expectedMessage>
+    </addToCart>
+
+    <addFromList>
+        <category>Books</category>
+        <productName>Fiction</productName>
+        <expectedMessage>The product has been added to your shopping cart</expectedMessage>
+    </addFromList>
+
+    <updateQuantity>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <quantity>3</quantity>
+    </updateQuantity>
+
+    <removeFromCart>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <emptyMessage>Your Shopping Cart is empty!</emptyMessage>
+    </removeFromCart>
+
+    <severalProducts>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <secondProductName>Fiction</secondProductName>
+    </severalProducts>
+
+    <invalidQuantity>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <quantity>0</quantity>
+        <expectedMessage>Quantity should be positive</expectedMessage>
+        <emptyMessage>Your Shopping Cart is empty!</emptyMessage>
+    </invalidQuantity>
+
+    <addToWishlist>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <expectedMessage>The product has been added to your wishlist</expectedMessage>
+        <emptyMessage>The wishlist is empty!</emptyMessage>
+    </addToWishlist>
+</dataSets>
