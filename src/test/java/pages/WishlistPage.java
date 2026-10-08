@@ -27,13 +27,13 @@ public class WishlistPage extends BasePage {
 
     public void moveProductToCart(String productName) {
         helperMethods.clickOnElement(cellOf(productName, "input[@name='addtocart']"));
-        helperMethods.clickOnElement(addToCartButton);
+        helperMethods.clickAndWaitForPageReload(addToCartButton);
         LoggerUtility.infoLog("Moved " + productName + " from the wishlist to the cart");
     }
 
     public void removeProduct(String productName) {
         helperMethods.clickOnElement(cellOf(productName, "input[@name='removefromcart']"));
-        helperMethods.clickOnElement(updateWishlistButton);
+        helperMethods.clickAndWaitForPageReload(updateWishlistButton);
         LoggerUtility.infoLog("Removed " + productName + " from the wishlist");
     }
 

@@ -2,6 +2,7 @@ package helpermethods;
 
 import configutility.ConfigurationReader;
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -84,6 +85,19 @@ public class HelperMethods {
      */
     public void waitUrlContains(String urlPart) {
         wait.until(ExpectedConditions.urlContains(urlPart));
+        wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+    }
+
+    /**
+     * For buttons that submit a form and reload the page (for example "Update shopping cart").
+     * Selenium does not always wait for that reload, so the test could read the old page.
+     * The method keeps a reference to the current page, clicks, waits until that reference is gone
+     * (the old page was replaced) and then until the new page has finished loading.
+     */
+    public void clickAndWaitForPageReload(WebElement element) {
+        WebElement oldPage = driver.findElement(By.tagName("html"));
+        clickOnElement(element);
+        wait.until(ExpectedConditions.stalenessOf(oldPage));
         wait.until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
     }
 

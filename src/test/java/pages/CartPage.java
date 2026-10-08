@@ -63,13 +63,13 @@ public class CartPage extends BasePage {
 
     public void updateQuantity(String productName, String quantity) {
         helperMethods.enterText(cellOf(productName, "input[contains(@class,'qty-input')]"), quantity);
-        helperMethods.clickOnElement(updateCartButton);
+        helperMethods.clickAndWaitForPageReload(updateCartButton);
         LoggerUtility.infoLog("Changed the quantity of " + productName + " to " + quantity);
     }
 
     public void removeProduct(String productName) {
         helperMethods.clickOnElement(cellOf(productName, "input[@name='removefromcart']"));
-        helperMethods.clickOnElement(updateCartButton);
+        helperMethods.clickAndWaitForPageReload(updateCartButton);
         LoggerUtility.infoLog("Removed " + productName + " from the cart");
     }
 
