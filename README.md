@@ -11,7 +11,7 @@ catalogue, cart, wishlist and checkout) with **37 test cases**, all of them auto
 
 | Area | Tool |
 |---|---|
-| Language | Java 21 |
+| Language | Java 25 (LTS) |
 | Browser automation | Selenium WebDriver 4.45 |
 | Test runner | TestNG 7.12 |
 | Build | Maven |
@@ -80,7 +80,7 @@ docs/TestCases.xlsx       test case specification
 
 ## Running the tests
 
-Requirements: JDK 21 or newer, Maven, and Chrome (or Edge / Firefox). Selenium Manager downloads
+Requirements: JDK 25 or newer, Maven, and Chrome (or Edge / Firefox). Selenium Manager downloads
 the browser driver automatically.
 
 **From IntelliJ IDEA:** right-click `Suites/RegressionSuite.xml` (or `SmokeSuite.xml`) and choose

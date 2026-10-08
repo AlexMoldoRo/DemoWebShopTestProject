@@ -9,8 +9,8 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <!-- Compiled for Java 21 (LTS) so the project also builds on CI; it runs fine on newer JDKs. -->
-        <maven.compiler.release>21</maven.compiler.release>
+        <!-- Compiled for Java 25, the current LTS (long-term support) version; it runs on JDK 25 or newer. -->
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Suite executed by "mvn test". Override with: mvn test -DsuiteFile=Suites/SmokeSuite.xml -->
         <suiteFile>Suites/RegressionSuite.xml</suiteFile>
