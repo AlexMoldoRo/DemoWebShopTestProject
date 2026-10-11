@@ -21,20 +21,23 @@ import java.nio.file.Paths;
 /**
  * Parent of all test classes: opens a new browser before each test and closes it after,
  * so the tests do not depend on each other.
+ *
+ * The driver is kept in a ThreadLocal: every thread that runs tests gets its own browser,
+ * even when TestNG runs several test methods of the same class (same object) in parallel.
  */
 @Listeners(ChainTestListener.class)
 public class TestBasePage {
 
-    private WebDriver driver;
-    private String testName;
+    private static final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+    private static final ThreadLocal<String> testName = new ThreadLocal<>();
 
     @BeforeMethod(alwaysRun = true)
     public void initialiseBrowser(Method method) {
-        testName = this.getClass().getSimpleName() + "." + method.getName();
-        LoggerUtility.startTestCase(testName);
-        driver = new BrowserFactory().getBrowserDriver();
+        testName.set(this.getClass().getSimpleName() + "." + method.getName());
+        LoggerUtility.startTestCase(testName.get());
+        driver.set(new BrowserFactory().getBrowserDriver());
         LoggerUtility.infoLog("The browser started successfully");
-        driver.get(ConfigurationReader.getConfiguration().getBaseUrl());
+        getDriver().get(ConfigurationReader.getConfiguration().getBaseUrl());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -46,11 +49,14 @@ public class TestBasePage {
             }
         } finally {
             // The browser is closed even if the screenshot fails
-            if (driver != null) {
-                driver.quit();
+            if (getDriver() != null) {
+                getDriver().quit();
                 LoggerUtility.infoLog("The browser was closed successfully");
             }
-            LoggerUtility.endTestCase(testName);
+            LoggerUtility.endTestCase(testName.get());
+            // Threads are reused by TestNG: the values of this test must not stay behind
+            driver.remove();
+            testName.remove();
         }
     }
 
@@ -61,14 +67,14 @@ public class TestBasePage {
 
     // Saves the screenshot in target/screenshots and attaches it to the HTML report
     private void takeScreenshot() {
-        if (driver == null) {
+        if (getDriver() == null) {
             return;
         }
         try {
-            byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            byte[] screenshot = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.BYTES);
             Path folder = Paths.get("target", "screenshots");
             Files.createDirectories(folder);
-            Files.write(folder.resolve(testName + ".png"), screenshot);
+            Files.write(folder.resolve(testName.get() + ".png"), screenshot);
             ChainTestListener.embed(screenshot, "image/png");
             LoggerUtility.infoLog("Screenshot saved for the failed test");
         } catch (Exception e) {
@@ -76,7 +82,8 @@ public class TestBasePage {
         }
     }
 
+    // The browser of the current thread
     public WebDriver getDriver() {
-        return driver;
+        return driver.get();
     }
 }

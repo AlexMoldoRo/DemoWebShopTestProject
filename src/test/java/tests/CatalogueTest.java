@@ -2,7 +2,6 @@ package tests;
 
 import objectdata.CatalogueObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pages.CategoryPage;
 import pages.HeaderPage;
@@ -13,21 +12,15 @@ import xmlreader.XmlDataLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class CatalogueTest extends TestBasePage {
 
-    private Map<String, CatalogueObject> catalogueData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        catalogueData = XmlDataLoader.loadData("CatalogueData.xml", CatalogueObject.class);
-    }
+    private static final String DATA_FILE = "CatalogueData.xml";
 
     @Test(groups = {"smoke", "regression"},
             description = "TC_CAT_01 - Open a category from the top menu")
     public void openCategoryFromTopMenu() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -43,7 +36,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CAT_02 - Open a sub-category")
     public void openSubCategory() {
-        CatalogueObject data = catalogueData.get("desktops");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "desktops", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -58,7 +51,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CAT_03 - Sort products by price, low to high")
     public void sortProductsByPriceLowToHigh() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -76,7 +69,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CAT_04 - Sort products by name, Z to A")
     public void sortProductsByNameZToA() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -94,7 +87,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CAT_05 - Change the number of products per page")
     public void changeNumberOfProductsPerPage() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -113,7 +106,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CAT_06 - Filter products by price range")
     public void filterProductsByPriceRange() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -131,7 +124,7 @@ public class CatalogueTest extends TestBasePage {
     @Test(groups = {"smoke", "regression"},
             description = "TC_CAT_07 - Open the product details page")
     public void openProductDetailsPage() {
-        CatalogueObject data = catalogueData.get("books");
+        CatalogueObject data = XmlDataLoader.loadDataSet(DATA_FILE, "books", CatalogueObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());

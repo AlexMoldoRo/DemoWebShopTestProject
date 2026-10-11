@@ -1,21 +1,18 @@
 package tests;
 
+import flows.ShopFlows;
 import helpermethods.TestDataGenerator;
 import objectdata.CheckoutObject;
 import objectdata.RegisterObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 import pages.CartPage;
-import pages.CategoryPage;
 import pages.CheckoutAsGuestPage;
 import pages.CheckoutPage;
 import pages.HeaderPage;
 import pages.MyAccountPage;
-import pages.NotificationBar;
 import pages.OrderCompletedPage;
-import pages.ProductPage;
-import pages.RegisterPage;
 import shareddata.TestBasePage;
 import xmlreader.XmlDataLoader;
 
@@ -26,20 +23,13 @@ import java.util.Map;
  */
 public class CheckoutTest extends TestBasePage {
 
-    private Map<String, CheckoutObject> checkoutData;
-    private Map<String, RegisterObject> registerData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        checkoutData = XmlDataLoader.loadData("CheckoutData.xml", CheckoutObject.class);
-        registerData = XmlDataLoader.loadData("RegisterData.xml", RegisterObject.class);
-    }
+    private static final String DATA_FILE = "CheckoutData.xml";
 
     @Test(groups = {"regression"},
             description = "TC_CHK_01 - Checkout without accepting the terms of service")
     public void checkoutWithoutAcceptingTerms() {
-        CheckoutObject data = checkoutData.get("termsNotAccepted");
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "termsNotAccepted", CheckoutObject.class);
+        CartPage cartPage = new ShopFlows(getDriver()).addProductToCartAndOpenCart(data.getCategory(), data.getProductName());
 
         cartPage.clickCheckout();
 
@@ -50,14 +40,10 @@ public class CheckoutTest extends TestBasePage {
     @Test(groups = {"smoke", "regression"},
             description = "TC_CHK_02 - Place an order as a guest")
     public void placeOrderAsGuest() {
-        CheckoutObject data = guestData();
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "guestOrder", CheckoutObject.class);
+        data.setEmail(TestDataGenerator.uniqueEmail());
+        CheckoutPage checkoutPage = new ShopFlows(getDriver()).startGuestCheckout(data.getCategory(), data.getProductName());
 
-        cartPage.acceptTermsOfService();
-        cartPage.clickCheckout();
-        new CheckoutAsGuestPage(getDriver()).clickCheckoutAsGuest();
-
-        CheckoutPage checkoutPage = new CheckoutPage(getDriver());
         checkoutPage.goToConfirmOrderStep(data);
         checkoutPage.confirmOrder();
 
@@ -69,17 +55,15 @@ public class CheckoutTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CHK_03 - Place an order as a registered customer")
     public void placeOrderAsRegisteredCustomer() {
-        // Precondition: a new customer is registered and logged in
-        RegisterObject user = registerData.get("validUser");
-        user.setEmail(TestDataGenerator.uniqueEmail());
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
-        new RegisterPage(getDriver()).registerUser(user);
-        Assert.assertEquals(headerPage.getLoggedInEmail(), user.getEmail(), "Precondition failed: user not registered");
+        ShopFlows shopFlows = new ShopFlows(getDriver());
 
-        CheckoutObject data = checkoutData.get("guestOrder");
+        // Precondition: a new customer is registered and logged in
+        RegisterObject user = shopFlows.registerNewUser(
+                XmlDataLoader.loadDataSet("RegisterData.xml", "validUser", RegisterObject.class));
+
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "guestOrder", CheckoutObject.class);
         data.setEmail(user.getEmail());
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CartPage cartPage = shopFlows.addProductToCartAndOpenCart(data.getCategory(), data.getProductName());
 
         // A logged in customer goes straight to the checkout, without the guest page
         cartPage.acceptTermsOfService();
@@ -92,7 +76,7 @@ public class CheckoutTest extends TestBasePage {
         Assert.assertEquals(orderCompletedPage.getSuccessMessage(), data.getExpectedMessage());
         String orderNumber = orderCompletedPage.getOrderNumber();
 
-        headerPage.clickAccountLink();
+        new HeaderPage(getDriver()).clickAccountLink();
         MyAccountPage myAccountPage = new MyAccountPage(getDriver());
         myAccountPage.openOrders();
         Assert.assertTrue(myAccountPage.getOrderListText().contains(orderNumber),
@@ -102,31 +86,27 @@ public class CheckoutTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CHK_04 - Billing address with mandatory fields empty")
     public void billingAddressWithEmptyMandatoryFields() {
-        CheckoutObject data = checkoutData.get("guestOrder");
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
-        cartPage.acceptTermsOfService();
-        cartPage.clickCheckout();
-        new CheckoutAsGuestPage(getDriver()).clickCheckoutAsGuest();
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "emptyBillingAddress", CheckoutObject.class);
+        CheckoutPage checkoutPage = new ShopFlows(getDriver()).startGuestCheckout(data.getCategory(), data.getProductName());
 
-        CheckoutPage checkoutPage = new CheckoutPage(getDriver());
         checkoutPage.continueFromBillingAddress();
 
-        Assert.assertEquals(checkoutPage.getBillingFieldError("FirstName"), "First name is required.");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("LastName"), "Last name is required.");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("Email"), "Email is required.");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("CountryId"), "Country is required.");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("City"), "City is required");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("Address1"), "Street address is required");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("ZipPostalCode"), "Zip / postal code is required");
-        Assert.assertEquals(checkoutPage.getBillingFieldError("PhoneNumber"), "Phone is required");
-        Assert.assertTrue(checkoutPage.isBillingStepOpen(), "The checkout left the billing address step");
+        // SoftAssert checks every field and reports all wrong messages, not only the first one
+        SoftAssert softAssert = new SoftAssert();
+        for (Map.Entry<String, String> expected : data.getExpectedErrors().entrySet()) {
+            softAssert.assertEquals(checkoutPage.getBillingFieldError(expected.getKey()), expected.getValue(),
+                    "Wrong message for " + expected.getKey());
+        }
+        softAssert.assertTrue(checkoutPage.isBillingStepOpen(), "The checkout left the billing address step");
+        softAssert.assertAll();
     }
 
     @Test(groups = {"regression"},
             description = "TC_CHK_05 - Order total on the confirmation step")
     public void orderTotalOnConfirmationStep() {
-        CheckoutObject data = guestData();
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "guestOrder", CheckoutObject.class);
+        data.setEmail(TestDataGenerator.uniqueEmail());
+        CartPage cartPage = new ShopFlows(getDriver()).addProductToCartAndOpenCart(data.getCategory(), data.getProductName());
         double cartSubTotal = cartPage.getSubTotal();
 
         cartPage.acceptTermsOfService();
@@ -150,12 +130,9 @@ public class CheckoutTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CHK_06 - Cart is emptied after the order is placed")
     public void cartIsEmptyAfterOrder() {
-        CheckoutObject data = guestData();
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
-        cartPage.acceptTermsOfService();
-        cartPage.clickCheckout();
-        new CheckoutAsGuestPage(getDriver()).clickCheckoutAsGuest();
-        CheckoutPage checkoutPage = new CheckoutPage(getDriver());
+        CheckoutObject data = XmlDataLoader.loadDataSet(DATA_FILE, "guestOrder", CheckoutObject.class);
+        data.setEmail(TestDataGenerator.uniqueEmail());
+        CheckoutPage checkoutPage = new ShopFlows(getDriver()).startGuestCheckout(data.getCategory(), data.getProductName());
         checkoutPage.goToConfirmOrderStep(data);
         checkoutPage.confirmOrder();
         new OrderCompletedPage(getDriver()).getSuccessMessage();
@@ -164,27 +141,6 @@ public class CheckoutTest extends TestBasePage {
         Assert.assertEquals(headerPage.getCartQuantity(), 0, "Wrong number in the header");
         headerPage.openShoppingCart();
         Assert.assertEquals(new CartPage(getDriver()).getEmptyCartMessage(),
-                checkoutData.get("emptyCartMessage").getExpectedMessage());
-    }
-
-    private CheckoutObject guestData() {
-        CheckoutObject data = checkoutData.get("guestOrder");
-        data.setEmail(TestDataGenerator.uniqueEmail());
-        return data;
-    }
-
-    // Precondition shared by all tests: the cart contains one product
-    private CartPage addProductAndOpenCart(String category, String productName) {
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickTopMenuCategory(category);
-        new CategoryPage(getDriver()).openProduct(productName);
-        new ProductPage(getDriver()).clickAddToCart();
-        NotificationBar notificationBar = new NotificationBar(getDriver());
-        notificationBar.getMessage();
-        notificationBar.close();
-        headerPage.openShoppingCart();
-        CartPage cartPage = new CartPage(getDriver());
-        Assert.assertTrue(cartPage.containsProduct(productName), "Precondition failed: the product is not in the cart");
-        return cartPage;
+                XmlDataLoader.loadDataSet(DATA_FILE, "emptyCartMessage", CheckoutObject.class).getExpectedMessage());
     }
 }

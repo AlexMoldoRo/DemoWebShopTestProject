@@ -1,34 +1,24 @@
 package tests;
 
+import flows.ShopFlows;
 import helpermethods.TestDataGenerator;
 import objectdata.LoginObject;
 import objectdata.RegisterObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pages.HeaderPage;
 import pages.LoginPage;
-import pages.RegisterPage;
 import shareddata.TestBasePage;
 import xmlreader.XmlDataLoader;
 
-import java.util.Map;
-
 public class LoginTest extends TestBasePage {
-
-    private Map<String, RegisterObject> registerData;
-    private Map<String, LoginObject> loginData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        registerData = XmlDataLoader.loadData("RegisterData.xml", RegisterObject.class);
-        loginData = XmlDataLoader.loadData("LoginData.xml", LoginObject.class);
-    }
 
     @Test(groups = {"smoke", "regression"},
             description = "TC_LOG_01 - Login with valid credentials")
     public void loginWithValidCredentials() {
-        RegisterObject user = createRegisteredUser();
+        // Precondition: a new account, created through the UI and logged out again
+        RegisterObject user = new ShopFlows(getDriver()).registerNewUserAndLogOut(
+                XmlDataLoader.loadDataSet("RegisterData.xml", "validUser", RegisterObject.class));
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickLoginLink();
@@ -43,8 +33,10 @@ public class LoginTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_LOG_02 - Login with a wrong password")
     public void loginWithWrongPassword() {
-        RegisterObject user = createRegisteredUser();
-        LoginObject data = loginData.get("wrongPassword");
+        // Precondition: a new account, created through the UI and logged out again
+        RegisterObject user = new ShopFlows(getDriver()).registerNewUserAndLogOut(
+                XmlDataLoader.loadDataSet("RegisterData.xml", "validUser", RegisterObject.class));
+        LoginObject data = XmlDataLoader.loadDataSet("LoginData.xml", "wrongPassword", LoginObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickLoginLink();
@@ -60,11 +52,10 @@ public class LoginTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_LOG_03 - Login with an email that is not registered")
     public void loginWithUnregisteredEmail() {
-        LoginObject data = loginData.get("unregisteredEmail");
+        LoginObject data = XmlDataLoader.loadDataSet("LoginData.xml", "unregisteredEmail", LoginObject.class);
         data.setEmail(TestDataGenerator.uniqueEmail());
 
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickLoginLink();
+        new HeaderPage(getDriver()).clickLoginLink();
 
         LoginPage loginPage = new LoginPage(getDriver());
         loginPage.login(data.getEmail(), data.getPassword());
@@ -76,7 +67,9 @@ public class LoginTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_LOG_04 - Logout")
     public void logout() {
-        RegisterObject user = createRegisteredUser();
+        // Precondition: a new account, created through the UI and logged out again
+        RegisterObject user = new ShopFlows(getDriver()).registerNewUserAndLogOut(
+                XmlDataLoader.loadDataSet("RegisterData.xml", "validUser", RegisterObject.class));
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickLoginLink();
@@ -87,22 +80,5 @@ public class LoginTest extends TestBasePage {
 
         Assert.assertTrue(headerPage.isLoginLinkDisplayed(), "The Log in link is not displayed after logout");
         Assert.assertFalse(headerPage.isLogoutLinkDisplayed(), "The Log out link is still displayed");
-    }
-
-    /**
-     * Precondition shared by the login tests: a brand new account, created through the UI.
-     * The test does not rely on an account that somebody else could change or delete.
-     * Registration logs the customer in, so the method logs out before returning.
-     */
-    private RegisterObject createRegisteredUser() {
-        RegisterObject user = registerData.get("validUser");
-        user.setEmail(TestDataGenerator.uniqueEmail());
-
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
-        new RegisterPage(getDriver()).registerUser(user);
-        Assert.assertEquals(headerPage.getLoggedInEmail(), user.getEmail(), "Precondition failed: user not registered");
-        headerPage.clickLogoutLink();
-        return user;
     }
 }

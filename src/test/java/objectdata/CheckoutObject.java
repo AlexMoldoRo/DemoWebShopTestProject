@@ -1,5 +1,7 @@
 package objectdata;
 
+import java.util.Map;
+
 /**
  * One data set from CheckoutData.xml.
  */
@@ -16,6 +18,8 @@ public class CheckoutObject {
     private String zipCode;
     private String phone;
     private String expectedMessage;
+    // Field name -> validation message, for the empty billing address
+    private Map<String, String> expectedErrors;
 
     public String getCategory() {
         return category;
@@ -63,5 +67,9 @@ public class CheckoutObject {
 
     public String getExpectedMessage() {
         return expectedMessage;
+    }
+
+    public Map<String, String> getExpectedErrors() {
+        return expectedErrors;
     }
 }

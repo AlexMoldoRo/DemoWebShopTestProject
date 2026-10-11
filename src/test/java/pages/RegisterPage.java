@@ -2,6 +2,7 @@ package pages;
 
 import logger.LoggerUtility;
 import objectdata.RegisterObject;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -35,22 +36,6 @@ public class RegisterPage extends BasePage {
 
     @FindBy(id = "register-button")
     private WebElement registerButton;
-
-    // Validation messages displayed next to each field
-    @FindBy(css = "span[data-valmsg-for='FirstName']")
-    private WebElement firstNameError;
-
-    @FindBy(css = "span[data-valmsg-for='LastName']")
-    private WebElement lastNameError;
-
-    @FindBy(css = "span[data-valmsg-for='Email']")
-    private WebElement emailError;
-
-    @FindBy(css = "span[data-valmsg-for='Password']")
-    private WebElement passwordError;
-
-    @FindBy(css = "span[data-valmsg-for='ConfirmPassword']")
-    private WebElement confirmPasswordError;
 
     // Errors sent back by the server (for example: the email is already registered)
     @FindBy(css = ".validation-summary-errors")
@@ -98,24 +83,13 @@ public class RegisterPage extends BasePage {
         return helperMethods.getElementText(registrationResult);
     }
 
-    public String getFirstNameError() {
-        return helperMethods.getElementText(firstNameError);
-    }
-
-    public String getLastNameError() {
-        return helperMethods.getElementText(lastNameError);
-    }
-
-    public String getEmailError() {
-        return helperMethods.getElementText(emailError);
-    }
-
-    public String getPasswordError() {
-        return helperMethods.getElementText(passwordError);
-    }
-
-    public String getConfirmPasswordError() {
-        return helperMethods.getElementText(confirmPasswordError);
+    /**
+     * Validation message displayed next to a field, for example "Email" -> "Wrong email".
+     * The field name is the one used by the page: FirstName, LastName, Email, Password, ConfirmPassword.
+     */
+    public String getFieldError(String fieldName) {
+        WebElement error = driver.findElement(By.cssSelector("span[data-valmsg-for='" + fieldName + "']"));
+        return helperMethods.getElementText(error);
     }
 
     public String getSummaryError() {

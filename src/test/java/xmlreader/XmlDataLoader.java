@@ -11,6 +11,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,18 @@ import java.util.Map;
 public class XmlDataLoader {
 
     private static final String TEST_DATA_FOLDER = "src/test/resources/testData/";
+
+    /**
+     * Returns one data set as a NEW object at every call. A test can change it
+     * (for example set a generated email) without affecting any other test.
+     */
+    public static <T> T loadDataSet(String fileName, String dataSetName, Class<T> clazz) {
+        T dataSet = loadData(fileName, clazz).get(dataSetName);
+        if (dataSet == null) {
+            throw new IllegalStateException("Data set <" + dataSetName + "> not found in " + fileName);
+        }
+        return dataSet;
+    }
 
     public static <T> Map<String, T> loadData(String fileName, Class<T> clazz) {
         Map<String, T> dataMap = new HashMap<>();
@@ -47,9 +60,15 @@ public class XmlDataLoader {
                     if (matches.getLength() == 0) {
                         continue;
                     }
-                    String value = matches.item(0).getTextContent().trim();
                     field.setAccessible(true);
 
+                    if (field.getType().equals(Map.class)) {
+                        // <expectedErrors><FirstName>...</FirstName>...</expectedErrors> -> {FirstName=...}
+                        field.set(obj, readChildren((Element) matches.item(0)));
+                        continue;
+                    }
+
+                    String value = matches.item(0).getTextContent().trim();
                     if (field.getType().equals(List.class)) {
                         field.set(obj, Arrays.asList(value.split(",\\s*")));
                     } else if (field.getType().equals(int.class)) {
@@ -66,5 +85,17 @@ public class XmlDataLoader {
         }
 
         return dataMap;
+    }
+
+    // Child tags of an element as name -> text, in the order of the file
+    private static Map<String, String> readChildren(Element parent) {
+        Map<String, String> values = new LinkedHashMap<>();
+        NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                values.put(children.item(i).getNodeName(), children.item(i).getTextContent().trim());
+            }
+        }
+        return values;
     }
 }

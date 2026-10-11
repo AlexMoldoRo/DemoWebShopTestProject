@@ -1,5 +1,7 @@
 package objectdata;
 
+import java.util.Map;
+
 /**
  * One data set from RegisterData.xml.
  */
@@ -12,6 +14,8 @@ public class RegisterObject {
     private String password;
     private String confirmPassword;
     private String expectedMessage;
+    // Field name -> validation message, for the data sets that check several fields at once
+    private Map<String, String> expectedErrors;
 
     public String getGender() {
         return gender;
@@ -44,5 +48,9 @@ public class RegisterObject {
 
     public String getExpectedMessage() {
         return expectedMessage;
+    }
+
+    public Map<String, String> getExpectedErrors() {
+        return expectedErrors;
     }
 }

@@ -44,6 +44,7 @@ empty and short search terms, invalid quantities, terms of service not accepted,
 ```
 src/test/java
 ├── configutility     reads GeneralConfiguration.xml (base URL, browser, headless, wait time)
+├── flows             shared multi-page steps used as preconditions (register a user, fill the cart)
 ├── helpermethods     Selenium actions wrapped with explicit waits; unique test data
 ├── logger            Log4j wrapper: one log file per test
 ├── objectdata        test data objects, filled from the XML files
@@ -68,17 +69,22 @@ docs/TestCases.xlsx       test case specification
 - **Page Object Model with a `BasePage` parent.** Every page object gets the driver, the helper
   methods and `PageFactory` initialisation from one place. Components that appear on several
   pages (`HeaderPage`, `NotificationBar`) have their own classes.
-- **Pages act, tests assert.** Page objects return values; all assertions are in the test classes.
+- **Pages act, tests assert.** Page objects return values; the checks of each test are in the test
+  classes. Steps that many tests need (register a user, add a product to the cart) are written once
+  in `ShopFlows`.
 - **No `Thread.sleep`.** Every action waits explicitly for its element. Background (AJAX) loading
   in the one-page checkout is detected through the shop's own loading flag.
 - **Independent tests.** Each test opens a new browser and creates the data it needs: a new
   account with a generated `@example.com` email, a new cart. No test depends on another or on an
   existing account.
 - **Test data outside the code.** Inputs and expected messages are in XML files, so a changed
-  text on the site is fixed in the data, not in the tests.
+  text on the site is fixed in the data, not in the tests. Every test loads its own copy of a data
+  set, so changing it (for example setting a generated email) cannot affect another test.
 - **Locators chosen for stability.** `id` where the site has one, then CSS classes; XPath is used
   where an element has to be found by its text (a category, a product row in the cart).
-- **Parallel execution.** Test classes run in parallel (two threads), each with its own browser.
+- **Parallel execution.** Test classes run in parallel (two threads). The WebDriver is kept in a
+  `ThreadLocal`, so every thread has its own browser; the framework would also support running
+  test methods in parallel.
 
 ## Running the tests
 

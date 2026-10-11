@@ -17,6 +17,22 @@
         <expectedMessage>Your order has been successfully processed!</expectedMessage>
     </guestOrder>
 
+    <!-- Billing address with every field empty: field name on the page -> expected message -->
+    <emptyBillingAddress>
+        <category>Books</category>
+        <productName>Health Book</productName>
+        <expectedErrors>
+            <FirstName>First name is required.</FirstName>
+            <LastName>Last name is required.</LastName>
+            <Email>Email is required.</Email>
+            <CountryId>Country is required.</CountryId>
+            <City>City is required</City>
+            <Address1>Street address is required</Address1>
+            <ZipPostalCode>Zip / postal code is required</ZipPostalCode>
+            <PhoneNumber>Phone is required</PhoneNumber>
+        </expectedErrors>
+    </emptyBillingAddress>
+
     <termsNotAccepted>
         <category>Books</category>
         <productName>Health Book</productName>

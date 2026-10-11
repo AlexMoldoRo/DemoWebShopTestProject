@@ -2,7 +2,6 @@ package tests;
 
 import objectdata.SearchObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pages.HeaderPage;
 import pages.SearchPage;
@@ -10,21 +9,15 @@ import shareddata.TestBasePage;
 import xmlreader.XmlDataLoader;
 
 import java.util.List;
-import java.util.Map;
 
 public class SearchTest extends TestBasePage {
 
-    private Map<String, SearchObject> searchData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        searchData = XmlDataLoader.loadData("SearchData.xml", SearchObject.class);
-    }
+    private static final String DATA_FILE = "SearchData.xml";
 
     @Test(groups = {"smoke", "regression"},
             description = "TC_SRC_01 - Search by an existing keyword")
     public void searchByExistingKeyword() {
-        SearchObject data = searchData.get("existingKeyword");
+        SearchObject data = XmlDataLoader.loadDataSet(DATA_FILE, "existingKeyword", SearchObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.searchFor(data.getKeyword());
@@ -42,7 +35,7 @@ public class SearchTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_SRC_02 - Search by a keyword with no results")
     public void searchByKeywordWithNoResults() {
-        SearchObject data = searchData.get("noResultsKeyword");
+        SearchObject data = XmlDataLoader.loadDataSet(DATA_FILE, "noResultsKeyword", SearchObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.searchFor(data.getKeyword());
@@ -56,7 +49,7 @@ public class SearchTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_SRC_03 - Search with an empty keyword")
     public void searchWithEmptyKeyword() {
-        SearchObject data = searchData.get("emptyKeyword");
+        SearchObject data = XmlDataLoader.loadDataSet(DATA_FILE, "emptyKeyword", SearchObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickSearchButton();
@@ -68,7 +61,7 @@ public class SearchTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_SRC_04 - Search by a keyword shorter than 3 characters")
     public void searchByShortKeyword() {
-        SearchObject data = searchData.get("shortKeyword");
+        SearchObject data = XmlDataLoader.loadDataSet(DATA_FILE, "shortKeyword", SearchObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.searchFor(data.getKeyword());
@@ -82,8 +75,8 @@ public class SearchTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_SRC_05 - Advanced search limited to a category")
     public void advancedSearchByCategory() {
-        SearchObject otherCategory = searchData.get("advancedOtherCategory");
-        SearchObject sameCategory = searchData.get("advancedSameCategory");
+        SearchObject otherCategory = XmlDataLoader.loadDataSet(DATA_FILE, "advancedOtherCategory", SearchObject.class);
+        SearchObject sameCategory = XmlDataLoader.loadDataSet(DATA_FILE, "advancedSameCategory", SearchObject.class);
 
         // Opens the Search page, where the advanced search is
         HeaderPage headerPage = new HeaderPage(getDriver());

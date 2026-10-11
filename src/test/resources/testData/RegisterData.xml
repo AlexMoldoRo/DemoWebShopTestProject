@@ -4,6 +4,17 @@
     (the shop refuses an email that is already registered).
 -->
 <dataSets>
+    <!-- Register clicked with every field empty: field name on the page -> expected message -->
+    <emptyFields>
+        <expectedErrors>
+            <FirstName>First name is required.</FirstName>
+            <LastName>Last name is required.</LastName>
+            <Email>Email is required.</Email>
+            <Password>Password is required.</Password>
+            <ConfirmPassword>Password is required.</ConfirmPassword>
+        </expectedErrors>
+    </emptyFields>
+
     <validUser>
         <gender>Male</gender>
         <firstName>Alex</firstName>

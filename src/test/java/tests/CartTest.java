@@ -1,8 +1,8 @@
 package tests;
 
+import flows.ShopFlows;
 import objectdata.CartObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pages.CartPage;
 import pages.CategoryPage;
@@ -12,26 +12,19 @@ import pages.ProductPage;
 import shareddata.TestBasePage;
 import xmlreader.XmlDataLoader;
 
-import java.util.Map;
-
 /**
  * Every test starts with a new browser, so the cart of the guest customer is always empty at the start.
  */
 public class CartTest extends TestBasePage {
 
-    private Map<String, CartObject> cartData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        cartData = XmlDataLoader.loadData("CartData.xml", CartObject.class);
-    }
+    private static final String DATA_FILE = "CartData.xml";
 
     @Test(groups = {"smoke", "regression"},
             description = "TC_CRT_01 - Add a product to the cart from the product page")
     public void addProductToCartFromProductPage() {
-        CartObject data = cartData.get("addToCart");
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "addToCart", CartObject.class);
 
-        ProductPage productPage = openProductPage(data.getCategory(), data.getProductName());
+        ProductPage productPage = new ShopFlows(getDriver()).openProductPage(data.getCategory(), data.getProductName());
         double price = productPage.getProductPrice();
         productPage.clickAddToCart();
 
@@ -52,7 +45,7 @@ public class CartTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CRT_02 - Add a product to the cart from the category listing")
     public void addProductToCartFromList() {
-        CartObject data = cartData.get("addFromList");
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "addFromList", CartObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -73,8 +66,8 @@ public class CartTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CRT_03 - Update the quantity of a product")
     public void updateProductQuantity() {
-        CartObject data = cartData.get("updateQuantity");
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "updateQuantity", CartObject.class);
+        CartPage cartPage = new ShopFlows(getDriver()).addProductToCartAndOpenCart(data.getCategory(), data.getProductName());
 
         double unitPrice = cartPage.getUnitPrice(data.getProductName());
         cartPage.updateQuantity(data.getProductName(), data.getQuantity());
@@ -88,8 +81,8 @@ public class CartTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CRT_04 - Remove a product from the cart")
     public void removeProductFromCart() {
-        CartObject data = cartData.get("removeFromCart");
-        CartPage cartPage = addProductAndOpenCart(data.getCategory(), data.getProductName());
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "removeFromCart", CartObject.class);
+        CartPage cartPage = new ShopFlows(getDriver()).addProductToCartAndOpenCart(data.getCategory(), data.getProductName());
 
         cartPage.removeProduct(data.getProductName());
 
@@ -100,7 +93,7 @@ public class CartTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CRT_05 - Sub-total with several products")
     public void subTotalWithSeveralProducts() {
-        CartObject data = cartData.get("severalProducts");
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "severalProducts", CartObject.class);
 
         HeaderPage headerPage = new HeaderPage(getDriver());
         headerPage.clickTopMenuCategory(data.getCategory());
@@ -125,9 +118,9 @@ public class CartTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_CRT_06 - Add a product with an invalid quantity")
     public void addProductWithInvalidQuantity() {
-        CartObject data = cartData.get("invalidQuantity");
+        CartObject data = XmlDataLoader.loadDataSet(DATA_FILE, "invalidQuantity", CartObject.class);
 
-        ProductPage productPage = openProductPage(data.getCategory(), data.getProductName());
+        ProductPage productPage = new ShopFlows(getDriver()).openProductPage(data.getCategory(), data.getProductName());
         productPage.enterQuantity(data.getQuantity());
         productPage.clickAddToCart();
 
@@ -140,24 +133,5 @@ public class CartTest extends TestBasePage {
         headerPage.openShoppingCart();
         Assert.assertEquals(new CartPage(getDriver()).getEmptyCartMessage(), data.getEmptyMessage());
         Assert.assertEquals(headerPage.getCartQuantity(), 0, "Wrong number in the header");
-    }
-
-    private ProductPage openProductPage(String category, String productName) {
-        new HeaderPage(getDriver()).clickTopMenuCategory(category);
-        new CategoryPage(getDriver()).openProduct(productName);
-        return new ProductPage(getDriver());
-    }
-
-    // Precondition shared by several tests: the cart contains one product
-    private CartPage addProductAndOpenCart(String category, String productName) {
-        ProductPage productPage = openProductPage(category, productName);
-        productPage.clickAddToCart();
-        NotificationBar notificationBar = new NotificationBar(getDriver());
-        notificationBar.getMessage();
-        notificationBar.close();
-        new HeaderPage(getDriver()).openShoppingCart();
-        CartPage cartPage = new CartPage(getDriver());
-        Assert.assertTrue(cartPage.containsProduct(productName), "Precondition failed: the product is not in the cart");
-        return cartPage;
     }
 }

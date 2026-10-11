@@ -1,10 +1,11 @@
 package tests;
 
+import flows.ShopFlows;
 import helpermethods.TestDataGenerator;
 import objectdata.RegisterObject;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 import pages.HeaderPage;
 import pages.RegisterPage;
 import shareddata.TestBasePage;
@@ -14,17 +15,12 @@ import java.util.Map;
 
 public class RegisterTest extends TestBasePage {
 
-    private Map<String, RegisterObject> registerData;
-
-    @BeforeClass(alwaysRun = true)
-    public void loadTestData() {
-        registerData = XmlDataLoader.loadData("RegisterData.xml", RegisterObject.class);
-    }
+    private static final String DATA_FILE = "RegisterData.xml";
 
     @Test(groups = {"smoke", "regression"},
             description = "TC_REG_01 - Register with valid data")
     public void registerWithValidData() {
-        RegisterObject data = registerData.get("validUser");
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "validUser", RegisterObject.class);
         data.setEmail(TestDataGenerator.uniqueEmail());
 
         HeaderPage headerPage = new HeaderPage(getDriver());
@@ -41,80 +37,70 @@ public class RegisterTest extends TestBasePage {
     @Test(groups = {"regression"},
             description = "TC_REG_02 - Register with all mandatory fields empty")
     public void registerWithEmptyMandatoryFields() {
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "emptyFields", RegisterObject.class);
 
+        new HeaderPage(getDriver()).clickRegisterLink();
         RegisterPage registerPage = new RegisterPage(getDriver());
         registerPage.clickRegisterButton();
 
-        Assert.assertEquals(registerPage.getFirstNameError(), "First name is required.");
-        Assert.assertEquals(registerPage.getLastNameError(), "Last name is required.");
-        Assert.assertEquals(registerPage.getEmailError(), "Email is required.");
-        Assert.assertEquals(registerPage.getPasswordError(), "Password is required.");
-        Assert.assertEquals(registerPage.getConfirmPasswordError(), "Password is required.");
+        // SoftAssert checks every field and reports all wrong messages, not only the first one
+        SoftAssert softAssert = new SoftAssert();
+        for (Map.Entry<String, String> expected : data.getExpectedErrors().entrySet()) {
+            softAssert.assertEquals(registerPage.getFieldError(expected.getKey()), expected.getValue(),
+                    "Wrong message for " + expected.getKey());
+        }
+        softAssert.assertAll();
     }
 
     @Test(groups = {"regression"},
             description = "TC_REG_03 - Register with an invalid email format")
     public void registerWithInvalidEmailFormat() {
-        RegisterObject data = registerData.get("invalidEmail");
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "invalidEmail", RegisterObject.class);
 
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
-
+        new HeaderPage(getDriver()).clickRegisterLink();
         RegisterPage registerPage = new RegisterPage(getDriver());
         registerPage.registerUser(data);
 
-        Assert.assertEquals(registerPage.getEmailError(), data.getExpectedMessage());
+        Assert.assertEquals(registerPage.getFieldError("Email"), data.getExpectedMessage());
     }
 
     @Test(groups = {"regression"},
             description = "TC_REG_04 - Register with a password shorter than 6 characters")
     public void registerWithShortPassword() {
-        RegisterObject data = registerData.get("shortPassword");
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "shortPassword", RegisterObject.class);
         data.setEmail(TestDataGenerator.uniqueEmail());
 
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
-
+        new HeaderPage(getDriver()).clickRegisterLink();
         RegisterPage registerPage = new RegisterPage(getDriver());
         registerPage.registerUser(data);
 
-        Assert.assertEquals(registerPage.getPasswordError(), data.getExpectedMessage());
+        Assert.assertEquals(registerPage.getFieldError("Password"), data.getExpectedMessage());
     }
 
     @Test(groups = {"regression"},
             description = "TC_REG_05 - Register with a different confirmation password")
     public void registerWithMismatchedPasswords() {
-        RegisterObject data = registerData.get("passwordMismatch");
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "passwordMismatch", RegisterObject.class);
         data.setEmail(TestDataGenerator.uniqueEmail());
 
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        headerPage.clickRegisterLink();
-
+        new HeaderPage(getDriver()).clickRegisterLink();
         RegisterPage registerPage = new RegisterPage(getDriver());
         registerPage.registerUser(data);
 
-        Assert.assertEquals(registerPage.getConfirmPasswordError(), data.getExpectedMessage());
+        Assert.assertEquals(registerPage.getFieldError("ConfirmPassword"), data.getExpectedMessage());
     }
 
     @Test(groups = {"regression"},
             description = "TC_REG_06 - Register with an email that is already registered")
     public void registerWithExistingEmail() {
-        RegisterObject data = registerData.get("existingEmail");
-        data.setEmail(TestDataGenerator.uniqueEmail());
-
-        HeaderPage headerPage = new HeaderPage(getDriver());
-        RegisterPage registerPage = new RegisterPage(getDriver());
+        RegisterObject data = XmlDataLoader.loadDataSet(DATA_FILE, "existingEmail", RegisterObject.class);
 
         // Precondition: an account with this email exists
-        headerPage.clickRegisterLink();
-        registerPage.registerUser(data);
-        Assert.assertEquals(headerPage.getLoggedInEmail(), data.getEmail(), "Precondition failed: user not registered");
-        headerPage.clickLogoutLink();
+        new ShopFlows(getDriver()).registerNewUserAndLogOut(data);
 
         // Test: register again with the same email
-        headerPage.clickRegisterLink();
+        new HeaderPage(getDriver()).clickRegisterLink();
+        RegisterPage registerPage = new RegisterPage(getDriver());
         registerPage.registerUser(data);
 
         Assert.assertTrue(registerPage.getSummaryError().contains(data.getExpectedMessage()),
