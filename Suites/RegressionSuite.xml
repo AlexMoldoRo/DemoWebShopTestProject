@@ -4,7 +4,7 @@
 <suite name="RegressionSuite">
 
     <!-- Every test class runs in its own thread; each class has its own browser. -->
-    <test name="RegressionSuite" parallel="classes" thread-count="2">
+    <test name="RegressionSuite" parallel="classes" thread-count="7">
         <packages>
             <package name="tests.*"></package>
         </packages>
